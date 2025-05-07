@@ -1,0 +1,1 @@
+from .utils import consume_msg
