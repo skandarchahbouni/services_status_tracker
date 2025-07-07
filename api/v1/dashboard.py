@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from datetime import datetime
 from db.mongodb import services_status_history_collection
-from db.dragonflydb import dragonfly_client
+from db.valkey import valkey_client
 import time
 from pydantic import BaseModel
 from datetime import datetime
@@ -61,15 +61,15 @@ def status():
     for service in services:
         row = {}
         row["service"] = service
-        row["status"] = dragonfly_client.hget(f"status:{service}", "status")
-        downtime = dragonfly_client.get(f"downtime:{service}")
+        row["status"] = valkey_client.hget(f"status:{service}", "status")
+        downtime = valkey_client.get(f"downtime:{service}")
         if downtime:
             downtime = int(downtime)
         else:
             downtime = 0
         if row["status"] == "DOWN":
             current_time_unix = int(time.time())
-            downtime += current_time_unix - int(dragonfly_client.hget(f"status:{service}", "timestamp"))
+            downtime += current_time_unix - int(valkey_client.hget(f"status:{service}", "timestamp"))
         row["downtime"] = downtime
         output.append(row)
     return output

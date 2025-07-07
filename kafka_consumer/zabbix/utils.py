@@ -1,4 +1,4 @@
-from db.dragonflydb import dragonfly_client
+from db.valkey import valkey_client
 from db.mongodb import services_status_history_collection
 from dotenv import load_dotenv
 import ast
@@ -21,7 +21,7 @@ def cumulate_downtime(service: str, duration: int):
     """
     Increment the total downtime of a service by the specified duration.
     """
-    dragonfly_client.incrby(f"downtime:{service}", duration)
+    valkey_client.incrby(f"downtime:{service}", duration)
 
 
 def update_service_status(service: str, status: str, timestamp: int):
@@ -30,7 +30,7 @@ def update_service_status(service: str, status: str, timestamp: int):
     """
     d = {"service": service, "status": status, "timestamp": timestamp}
     print("Updating: ....", d)
-    dragonfly_client.hset(f"status:{service}", mapping=d)
+    valkey_client.hset(f"status:{service}", mapping=d)
     d["timestamp"] = datetime.fromtimestamp(d["timestamp"], tz=timezone.utc)
     services_status_history_collection.insert_one(document=d)
 
@@ -60,7 +60,7 @@ def check_service_status(service: str, timestamp: int):
         status = "from formula ..."  # Placeholder logic
 
     # Get previous status to detect changes
-    previous = dragonfly_client.hgetall(f"status:{service}")
+    previous = valkey_client.hgetall(f"status:{service}")
     previous_status, previous_timestamp = None, None
     if previous:
         previous_status = previous.get("status", "UNKNOWN")
@@ -93,9 +93,9 @@ def push_capped_list(key: str, value: str, max_items: int = max_items):
     """
     Add a new value to a Redis list and trim it to keep only the last `max_items` entries.
     """
-    dragonfly_client.lpush(key, value)
-    dragonfly_client.ltrim(key, 0, max_items - 1)
-    result = [parse_value(item) for item in dragonfly_client.lrange(key, 0, -1)]
+    valkey_client.lpush(key, value)
+    valkey_client.ltrim(key, 0, max_items - 1)
+    result = [parse_value(item) for item in valkey_client.lrange(key, 0, -1)]
     print(f"{key}: {result}")
 
 
@@ -115,4 +115,4 @@ def get_latest_values(itemid: str, n: int) -> list:
     """
     Fetch the latest `n` values for a given item ID from the capped list.
     """
-    return [parse_value(item) for item in dragonfly_client.lrange(f"items:{itemid}", 0, n - 1)]
+    return [parse_value(item) for item in valkey_client.lrange(f"items:{itemid}", 0, n - 1)]
