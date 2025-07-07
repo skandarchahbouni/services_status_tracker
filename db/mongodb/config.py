@@ -10,6 +10,4 @@ client = MongoClient(uri)
 
 # Initialize the database and collections
 db = client["poc"]
-events_collection = db["events"]
 services_status_history_collection = db["services_status_history"]
-maintenance_history_collection = db["maintenance_history"]

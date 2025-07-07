@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from datetime import datetime, timezone
+from datetime import datetime
 from db.mongodb import services_status_history_collection
 from db.dragonflydb import dragonfly_client
 import time
