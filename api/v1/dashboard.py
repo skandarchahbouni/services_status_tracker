@@ -1,9 +1,12 @@
 from fastapi import APIRouter
 from datetime import datetime, timezone
-from collections import defaultdict
 from db.mongodb import services_status_history_collection
 from db.dragonflydb import dragonfly_client
 import time
+from pydantic import BaseModel
+from datetime import datetime
+from bson import ObjectId
+
 
 router = APIRouter()
 
@@ -21,20 +24,11 @@ def mock_status_history():
     return [
     {
         "time": "2024-02-29 8:00:00",
-        "SaaS": "UP",
-        "IaaS": "UP"
-    },
-    {
-        "time": "2024-02-29 8:15:00",
-        "IaaS": "UP"
+        "SaaS": "UP"
     },
     {
         "time": "2024-02-29 8:30:00",
         "SaaS": "DOWN",
-    },
-    {
-        "time": "2024-02-29 8:45:00",
-        "IaaS": "DEGRADED"
     },
     {
         "time": "2024-02-29 9:00:00",
@@ -43,25 +37,20 @@ def mock_status_history():
     {
         "time": "2024-02-29 9:15:00",
         "SaaS": "UP",
-        "IaaS": "DOWN"
     },
     {
         "time": "2024-02-29 9:30:00",
         "SaaS": "UP",
-        "IaaS": "DOWN"
     },
     {
         "time": "2024-02-29 10:00:00",
         "SaaS": "DOWN",
-        "IaaS": "DOWN"
     },
     {
         "time": "2024-02-29 10:30:00",
         "SaaS": "MAINTENANCE",
-        "IaaS": "DOWN"
     }
     ]
-
 
 
 @router.get("/realtime-status-and-sla", tags=["Real data dashboard"])
@@ -86,28 +75,17 @@ def status():
     return output
 
 
-@router.get("/status-history/{service}/{panel}", tags=["Real data dashboard"])
-def status_history(service: str, panel: str):
+class StatusHistoryModel(BaseModel):
+    service: str
+    status: str
+    timestamp: datetime
+
+    class Config:
+        allow_population_by_field_name = True
+        json_encoders = {ObjectId: str}
+        orm_mode = True
+
+@router.get("/status-history/{service}", tags=["Real data dashboard"])
+def status_history(service: str):
     docs = services_status_history_collection.find({"service": service}).sort("timestamp", 1)
-    # Group statuses by timestamp
-    grouped = defaultdict(dict)
-    for doc in docs:
-        ts = datetime.fromisoformat(str(doc["timestamp"]))
-        service = doc["service"]
-        status = doc["status"]
-        grouped[ts][service] = status
-    # Convert to desired format
-    result = []
-    all_services = set()
-    for ts, services in grouped.items():
-        entry = {"timestamp": ts}
-        entry.update(services)
-        all_services.update(services.keys())
-        result.append(entry)    
-    current_time = datetime.now(timezone.utc)
-    last_row = {"timestamp": current_time}
-    if panel != "table":
-        for service in all_services:
-            last_row[service] = None
-        result.append(last_row)
-    return result
+    return [StatusHistoryModel(**doc) for doc in docs]
