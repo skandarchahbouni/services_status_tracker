@@ -94,3 +94,5 @@ We have two approaches to work:
 - what if we consume the same messages twice.... since all computations are based on the timestamp of the items, will this really cause a problem ? 
 
 
+
+- Test update 
