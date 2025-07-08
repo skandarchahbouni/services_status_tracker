@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from datetime import datetime
-from db.mongodb import services_status_history_collection
+from db.mongodb import services_status_collection
 from db.valkey import valkey_client
 import time
 from pydantic import BaseModel
@@ -9,6 +9,7 @@ from bson import ObjectId
 
 
 router = APIRouter()
+
 
 @router.get("/mock-data/realtime-status-and-sla", tags=["Mock data dashboard"])
 def mock_status():
@@ -19,37 +20,35 @@ def mock_status():
         {"service": "BaaS", "status": "MAINTENANCE", "downtime": 45},
     ]
 
+
 @router.get("/mock-data/status-history", tags=["Mock data dashboard"])
 def mock_status_history():
     return [
-    {
-        "time": "2024-02-29 8:00:00",
-        "SaaS": "UP"
-    },
-    {
-        "time": "2024-02-29 8:30:00",
-        "SaaS": "DOWN",
-    },
-    {
-        "time": "2024-02-29 9:00:00",
-        "SaaS": "UP",
-    },
-    {
-        "time": "2024-02-29 9:15:00",
-        "SaaS": "UP",
-    },
-    {
-        "time": "2024-02-29 9:30:00",
-        "SaaS": "UP",
-    },
-    {
-        "time": "2024-02-29 10:00:00",
-        "SaaS": "DOWN",
-    },
-    {
-        "time": "2024-02-29 10:30:00",
-        "SaaS": "MAINTENANCE",
-    }
+        {"time": "2024-02-29 8:00:00", "SaaS": "UP"},
+        {
+            "time": "2024-02-29 8:30:00",
+            "SaaS": "DOWN",
+        },
+        {
+            "time": "2024-02-29 9:00:00",
+            "SaaS": "UP",
+        },
+        {
+            "time": "2024-02-29 9:15:00",
+            "SaaS": "UP",
+        },
+        {
+            "time": "2024-02-29 9:30:00",
+            "SaaS": "UP",
+        },
+        {
+            "time": "2024-02-29 10:00:00",
+            "SaaS": "DOWN",
+        },
+        {
+            "time": "2024-02-29 10:30:00",
+            "SaaS": "MAINTENANCE",
+        },
     ]
 
 
@@ -69,7 +68,9 @@ def status():
             downtime = 0
         if row["status"] == "DOWN":
             current_time_unix = int(time.time())
-            downtime += current_time_unix - int(valkey_client.hget(f"status:{service}", "timestamp"))
+            downtime += current_time_unix - int(
+                valkey_client.hget(f"status:{service}", "timestamp")
+            )
         row["downtime"] = downtime
         output.append(row)
     return output
@@ -85,7 +86,8 @@ class StatusHistoryModel(BaseModel):
         json_encoders = {ObjectId: str}
         orm_mode = True
 
+
 @router.get("/status-history/{service}", tags=["Real data dashboard"])
 def status_history(service: str):
-    docs = services_status_history_collection.find({"service": service}).sort("timestamp", 1)
+    docs = services_status_collection.find({"service": service}).sort("timestamp", 1)
     return [StatusHistoryModel(**doc) for doc in docs]

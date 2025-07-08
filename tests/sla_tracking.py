@@ -3,10 +3,10 @@ import json
 import os
 
 
-file_path = os.path.join(os.path.dirname(__file__), "history.ndjson")
+file_path = os.path.join(os.path.dirname(__file__), "data/history.ndjson")
 
 if __name__ == "__main__":
-    with open(file_path, 'r', encoding='utf-8') as f:
+    with open(file_path, "r", encoding="utf-8") as f:
         for line in f:
             if line.strip():
                 try:

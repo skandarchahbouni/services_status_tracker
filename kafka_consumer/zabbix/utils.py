@@ -1,17 +1,10 @@
 from db.valkey import valkey_client
-from db.mongodb import services_status_history_collection
-from dotenv import load_dotenv
+from db.mongodb import services_status_collection
 import ast
 import os
 from datetime import datetime, timezone
 
-# Load environment variables from a .env file
-load_dotenv()
-index = {
-    50489: ["SaaS"], 
-    50486: ["SaaS"], 
-    50492: ["SaaS"]
-}
+index = {50489: ["SaaS"], 50486: ["SaaS"], 50492: ["SaaS"]}
 
 # Maximum number of items to keep per item ID
 max_items = int(os.getenv("MAX_ITEMS"))
@@ -32,7 +25,7 @@ def update_service_status(service: str, status: str, timestamp: int):
     print("Updating: ....", d)
     valkey_client.hset(f"status:{service}", mapping=d)
     d["timestamp"] = datetime.fromtimestamp(d["timestamp"], tz=timezone.utc)
-    services_status_history_collection.insert_one(document=d)
+    services_status_collection.insert_one(document=d)
 
 
 def check_service_status(service: str, timestamp: int):
@@ -42,7 +35,7 @@ def check_service_status(service: str, timestamp: int):
     """
     if service == "SaaS":
         app_host = get_latest_values(itemid="50489", n=3)
-        db_host  = get_latest_values(itemid="50486", n=3)
+        db_host = get_latest_values(itemid="50486", n=3)
         ws_host = get_latest_values(itemid="50492", n=3)
 
         # If any list has less than 3 values, status is UNKNOWN
@@ -51,7 +44,7 @@ def check_service_status(service: str, timestamp: int):
         # If any component is fully down (max = 0), service is DOWN
         elif max(app_host) == 0 or max(db_host) == 0 or max(ws_host) == 0:
             status = "DOWN"
-        else: 
+        else:
             status = "UP"
 
     elif service == "PaaS":
@@ -67,7 +60,7 @@ def check_service_status(service: str, timestamp: int):
 
     if status != previous_status:
         print(f"Updating status from: {previous_status} to {status}")
-        update_service_status(service=service, status=status, timestamp=timestamp)       
+        update_service_status(service=service, status=status, timestamp=timestamp)
         # Calculate downtime duration only if transitioning from DOWN
         if previous_status == "DOWN":
             previous_timestamp = int(previous.get("timestamp"))
@@ -115,4 +108,6 @@ def get_latest_values(itemid: str, n: int) -> list:
     """
     Fetch the latest `n` values for a given item ID from the capped list.
     """
-    return [parse_value(item) for item in valkey_client.lrange(f"items:{itemid}", 0, n - 1)]
+    return [
+        parse_value(item) for item in valkey_client.lrange(f"items:{itemid}", 0, n - 1)
+    ]
