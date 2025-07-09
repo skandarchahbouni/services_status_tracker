@@ -5,8 +5,8 @@ import json
 
 conf = {
     "bootstrap.servers": "localhost:9092",
-    "group.id": "zabbix",
-    "auto.offset.reset": "latest",
+    "group.id": "realtime",
+    "auto.offset.reset": "earliest",
     "enable.auto.commit": False,
     # 'auto.commit.interval.ms': 5000
 }
