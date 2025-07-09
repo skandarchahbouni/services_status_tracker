@@ -1,8 +1,15 @@
 from confluent_kafka import Producer
+from dotenv import load_dotenv
 import json
+import os
+
+# Load environment variables from .env file
+load_dotenv()
+
+KAFKA_BROKERS = os.getenv("KAFKA_BROKERS")
 
 conf = {
-    'bootstrap.servers': 'localhost:9092'
+    'bootstrap.servers': KAFKA_BROKERS
 }
 
 producer = Producer(conf)

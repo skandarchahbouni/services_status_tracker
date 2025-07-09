@@ -1,10 +1,7 @@
-import redis
-
-# Connect to Valkey (default: localhost:6379)
-r = redis.Redis(host="localhost", port=6379, decode_responses=True)
+from db.valkey import valkey_client
 
 # Get all keys
-keys = r.scan_iter()
+keys = valkey_client.scan_iter()
 
 # Iterate and print key, type, and value
 for key in keys:
