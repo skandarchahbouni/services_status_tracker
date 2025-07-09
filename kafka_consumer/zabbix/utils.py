@@ -2,7 +2,12 @@ from db.valkey import valkey_client
 from db.mongodb import services_status_collection
 import ast
 import os
+from dotenv import load_dotenv
 from datetime import datetime, timezone
+
+
+# Load environment variables from .env file
+load_dotenv()
 
 index = {50489: ["SaaS"], 50486: ["SaaS"], 50492: ["SaaS"]}
 

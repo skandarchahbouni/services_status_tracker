@@ -1,6 +1,9 @@
 import redis
+from dotenv import load_dotenv
 import os
 
+# Load environment variables from .env file
+load_dotenv()
 
 VALKEY_PASSWORD = os.getenv("VALKEY_PASSWORD")
 
