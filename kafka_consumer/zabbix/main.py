@@ -12,7 +12,7 @@ conf = {
 }
 
 consumer = Consumer(conf)
-consumer.subscribe(["items"])
+consumer.subscribe(["zabbix.items"])
 
 
 try:
