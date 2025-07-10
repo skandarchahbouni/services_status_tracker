@@ -2,6 +2,7 @@ from db.valkey import valkey_client
 from db.mongodb import services_status_collection
 import ast
 import os
+import logging
 from dotenv import load_dotenv
 from datetime import datetime, timezone
 
