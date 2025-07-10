@@ -3,6 +3,10 @@ from .utils import consume_msg
 from dotenv import load_dotenv
 import json
 import os
+import logging
+
+
+logging.basicConfig(level=logging.INFO)
 
 # Load environment variables from .env file
 load_dotenv()
@@ -33,6 +37,6 @@ try:
             consumer.commit(msg)
 
 except KeyboardInterrupt:
-    print("Stopping consumer...")
+    logging.error("Stopping consumer...")
 finally:
     consumer.close()

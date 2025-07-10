@@ -27,7 +27,7 @@ def update_service_status(service: str, status: str, timestamp: int):
     Update the current status and timestamp of a service in the database.
     """
     d = {"service": service, "status": status, "timestamp": timestamp}
-    print("Updating: ....", d)
+    logging.info("Updating: ....", d)
     valkey_client.hset(f"status:{service}", mapping=d)
     d["timestamp"] = datetime.fromtimestamp(d["timestamp"], tz=timezone.utc)
     services_status_collection.insert_one(document=d)
@@ -64,7 +64,7 @@ def check_service_status(service: str, timestamp: int):
         previous_status = previous.get("status", "UNKNOWN")
 
     if status != previous_status:
-        print(f"Updating status from: {previous_status} to {status}")
+        logging.info(f"Updating status from: {previous_status} to {status}")
         update_service_status(service=service, status=status, timestamp=timestamp)
         # Calculate downtime duration only if transitioning from DOWN
         if previous_status == "DOWN":
@@ -94,7 +94,7 @@ def push_capped_list(key: str, value: str, max_items: int = max_items):
     valkey_client.lpush(key, value)
     valkey_client.ltrim(key, 0, max_items - 1)
     result = [parse_value(item) for item in valkey_client.lrange(key, 0, -1)]
-    print(f"{key}: {result}")
+    logging.info(f"{key}: {result}")
 
 
 def parse_value(val: str):
@@ -105,7 +105,7 @@ def parse_value(val: str):
     try:
         return ast.literal_eval(val)
     except (ValueError, SyntaxError):
-        print(f"Error when parsing ... {val}")
+        logging.info(f"Error when parsing ... {val}")
     return val
 
 
