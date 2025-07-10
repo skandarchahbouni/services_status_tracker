@@ -29,7 +29,7 @@ with open("data/history.ndjson", "r") as f:
         try:
             msg = json.loads(line)
             producer.produce(
-                topic="sensor-readings",
+                topic="zabbix.items",
                 value=json.dumps(msg),
                 key=str(msg.get("itemid", "")),  # key is optional
                 callback=delivery_report
