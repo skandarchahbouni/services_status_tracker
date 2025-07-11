@@ -1,4 +1,4 @@
-mport requests
+import requests
 
 # Define the endpoint URL
 url = "http://localhost:5000/api/v1/items"

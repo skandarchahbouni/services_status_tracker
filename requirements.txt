@@ -42,6 +42,7 @@ python-multipart==0.0.20
 pytz==2025.2
 PyYAML==6.0.2
 redis==6.0.0
+requests==2.32.4
 rich==14.0.0
 rich-toolkit==0.14.5
 robinhood-aiokafka==1.1.6
