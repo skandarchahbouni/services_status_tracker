@@ -1,12 +1,20 @@
-import redis
+from redis.sentinel import Sentinel
 from dotenv import load_dotenv
 import os
 
 # Load environment variables from .env file
 load_dotenv()
 
-VALKEY_PASSWORD = os.getenv("VALKEY_PASSWORD")
-VALKEY_MASTER= os.getenv("VALKEY_MASTER")
+# Get the comma-separated IP addresses from the environment variable
+IP_ADDRESSES = os.getenv("IP_ADDRESSES")
 
-# Connect to Redis
-valkey_client = redis.Redis(host=VALKEY_MASTER, port=6379, db=0, password=VALKEY_PASSWORD, decode_responses=True)
+# Split the IP addresses into a list
+ip_list = IP_ADDRESSES.split(',')
+
+VALKEY_PASSWORD = os.getenv("VALKEY_PASSWORD")
+
+# Connect to Sentinel(s) using the IP addresses
+sentinel = Sentinel([(ip, 26379) for ip in ip_list], socket_timeout=0.5)
+
+# Get a connection to the master (write operations)
+valkey_client = sentinel.master_for('mymaster', socket_timeout=0.5, password=VALKEY_PASSWORD, db=0, decode_responses=True)
