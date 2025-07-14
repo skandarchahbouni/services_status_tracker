@@ -6,10 +6,10 @@ import os
 load_dotenv()
 
 # Get the comma-separated IP addresses from the environment variable
-IP_ADDRESSES = os.getenv("IP_ADDRESSES")
+SENTINELS = os.getenv("SENTINELS")
 
 # Split the IP addresses into a list
-ip_list = IP_ADDRESSES.split(',')
+ip_list = SENTINELS.split(',')
 
 VALKEY_PASSWORD = os.getenv("VALKEY_PASSWORD")
 
