@@ -186,3 +186,11 @@ Run these tests independently based on what part of the system you want to valid
 * Ensure you have proper access to Kafka, MongoDB, and Valkey (Redis-compatible service).
 * Log directories (`/var/log/kafka/`) should exist and be writable by the service user.
 * If using SELinux or AppArmor, you may need to adjust permissions for systemd services.
+
+--- 
+
+## 🎥 Live Demo
+
+Watch the demo below:
+[Watch the video](https://drive.google.com/file/d/13A3iLx3SFSEshnfglBvKc78esOZwV0Kc/view?usp=sharing)
+ 
